@@ -3,6 +3,7 @@ from threading import Thread
 from tkinter import *
 from tkinter import ttk
 import ftplib
+from ftplib import FTP
 import os
 import ntpath #This is used to extract filename from path
 
@@ -27,7 +28,32 @@ global song_counter
 song_counter = 0
 
 
+def browseFiles():
+    global listbox
+    global song_counter
+    global filePathLabel
 
+    try:
+        filename = filedialog.askopenfilename()
+        HOSTNAME = "127.0.0.1"
+        USERNAME = "lftpd"
+        PASSWORD = "lftpd"
+
+        ftp_server = FTP(HOSTNAME, USERNAME, PASSWORD)
+        ftp_server.encoding = "utf-8"
+        ftp_server.cwd('shared_files')
+        fname=ntpath.basename(filename)
+        with open(filename, 'rb') as file:
+            ftp_server.storbinary(f"STOR {fname}", file)
+
+        ftp_server.dir()
+        ftp_server.quit()
+       
+        listbox.insert(song_counter, fname)
+        song_counter = song_counter + 1
+        
+    except FileNotFoundError:
+        print("Cancel Button Pressed")
 
 
 def play():

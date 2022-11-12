@@ -3,6 +3,11 @@ from  threading import Thread
 import time
 import os
 
+#pip install pyftpdlib < this should be installed
+from pyftpdlib.authorizers import DummyAuthorizer
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.servers import FTPServer
+
 IP_ADDRESS = '127.0.0.1'
 PORT = 8050
 SERVER = None
@@ -35,6 +40,18 @@ def acceptConnections():
         thread = Thread(target = handleClient, args=(client,client_name,))
         thread.start()
         
+def ftp():
+    global IP_ADDRESS
+    
+    authorizer = DummyAuthorizer()
+    authorizer.add_user("lftpd", "lftpd", ".", perm="elradfmw")
+
+    handler = FTPHandler
+    handler.authorizer = authorizer
+
+    ftp_server = FTPServer((IP_ADDRESS,21),handler)
+    ftp_server.serve_forever()
+
 def setup():
     print("\n\t\t\t\t\t\tIP MESSENGER\n")
 
@@ -57,3 +74,7 @@ def setup():
 
 setup_thread = Thread(target=setup)           #receiving multiple messages
 setup_thread.start()
+
+
+ftp_thread = Thread(target=ftp)               #receiving multiple messages
+ftp_thread.start()
